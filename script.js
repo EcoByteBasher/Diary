@@ -59,12 +59,34 @@ async function loadAllDiariesFromFolder() {
       diaryData[year] = parseDiaryText(text, year);
     }
 
-    finalizeDiaryLoad();
+    // Populate the year selector and show the first view
+    finalizeDiaryLoad(links);
+
   } catch (err) {
     console.error("Failed to load diaries:", err);
     const container = document.getElementById("entriesContainer");
     if (container) container.innerHTML = `<p class="error">⚠️ Unable to load diary files. Please check your files or network.</p>`;
   }
+}
+
+function finalizeDiaryLoad(files) {
+  // Extract years from the files
+  const years = files.map(file => extractYear(file)).sort();
+  
+  const select = document.getElementById("yearSelect");
+  if (!select) return;
+
+  // Populate the year dropdown with available years
+  select.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join("");
+  
+  // Set the current year to the first year in the list
+  currentYear = years[0];
+  select.value = currentYear;
+
+  // Show the initial view
+  showCurrentView();
+
+  console.log(`✅ Loaded ${years.length} diary files (${years[0]}–${years[years.length - 1]})`);
 }
 
 /* -----------------------
