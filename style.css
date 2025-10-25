@@ -1,0 +1,236 @@
+:root {
+  --bg: #fafafa;
+  --primary: #2c3e50;
+  --accent: #3498db;
+  --text: #333;
+  --sidebar-bg: #f0f3f6;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background: var(--primary);
+  color: white;
+  padding: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header h1 { margin: 0 0 .5rem 0; }
+
+.toolbar, .searchbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+input[type="text"], input[type="date"] {
+  padding: 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: var(--accent);
+  border: none;
+  color: white;
+  padding: 0.4rem 0.7rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:hover { background: #217dbb; }
+
+#content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+#sidebar {
+  width: 220px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid #ccc;
+  padding: 0.5rem;
+  overflow-y: auto;
+}
+
+#sidebar h3 {
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+#calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.day {
+  text-align: center;
+  padding: 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.day.has-entry {
+  background: #d6eaf8;
+}
+.day.today {
+  border: 2px solid var(--accent);
+}
+.day:hover {
+  background: var(--accent);
+  color: white;
+}
+
+main {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* --- ENTRY DISPLAY --- */
+.entry {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin: 1rem 0;
+  padding: 1.2rem 1.5rem;
+  overflow-wrap: break-word;  /* ensures text wraps */
+  word-wrap: break-word;
+  white-space: pre-wrap;      /* preserves line breaks from diary text */
+}
+
+.entry h2 {
+  font-size: 1rem;            /* smaller date text */
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.3rem;
+}
+
+/* Main diary text */
+.entry pre {
+  font-family: 'Merriweather', serif;
+  font-size: var(--entry-font-size, 17px);
+  line-height: 1.6;
+  color: #222;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+footer {
+  background: var(--primary);
+  color: white;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.hint {
+  color: #666;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* --- READING MODE TOGGLE --- */
+.reading-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+#themeToggle {
+  background: var(--accent);
+  border: none;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+#themeToggle:hover {
+  background: #217dbb;
+}
+
+#fontSizeRange {
+  vertical-align: middle;
+}
+
+/* --- DARK THEME --- */
+body.dark {
+  --bg: #1e1e1e;
+  --primary: #121212;
+  --accent: #3498db;
+  --text: #eee;
+  --sidebar-bg: #2a2a2a;
+}
+
+body.dark header,
+body.dark footer {
+  background: #121212;
+}
+
+body.dark .entry {
+  background: #2a2a2a;
+  color: var(--text);
+}
+
+body.dark .entry h2 {
+  color: #bbb;
+  border-bottom: 1px solid #444;
+}
+
+body.dark .entry pre {
+  color: #eee;
+}
+
+/* Smooth theme transitions */
+body, .entry, header, footer {
+  transition: background 0.4s, color 0.4s;
+}
+
+/* --- Dark Mode Calendar Fix --- */
+body.dark #sidebar {
+  background: #222;
+  border-color: #444;
+}
+
+body.dark #calendar .day {
+  color: #eee;
+  background: transparent;
+}
+
+body.dark #calendar .day.has-entry {
+  background: #2d4961;  /* soft blue highlight for days with entries */
+}
+
+body.dark #calendar .day.today {
+  border: 2px solid var(--accent);
+}
+
+body.dark #calendar .day:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* Responsive: collapse sidebar */
+@media (max-width: 800px) {
+  #content { flex-direction: column; }
+  #sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ccc; }
+}
+

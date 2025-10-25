@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chris' Diary</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3498db">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Chris' Diary</h1>
+    <div class="toolbar">
+      <label>Year:
+        <select id="yearSelect"></select>
+      </label>
+      <label>View:
+        <select id="viewMode">
+          <option value="month">Month</option>
+          <option value="week">Week</option>
+          <option value="day">Day</option>
+        </select>
+      </label>
+      <label>Jump to date:
+        <input type="date" id="datePicker" lang="en-GB">
+      </label>
+      <button id="prevBtn" title="Previous">◀</button>
+      <button id="nextBtn" title="Next">▶</button>
+      <button id="loadFilesBtn" style="display:none;">Select Diary Files</button>
+    </div>
+
+    <div class="searchbar">
+      <input id="searchInput" type="text" placeholder='Search ("Mike" AND "Dave")'>
+      <label><input type="checkbox" id="searchAllYears"> All years</label>
+      <button id="searchBtn">Search</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+    <div class="reading-controls">
+      <button id="themeToggle">🌙 Dark Mode</button>
+      <label>Font size:
+        <input id="fontSizeRange" type="range" min="14" max="22" value="17">
+      </label>
+    </div>
+  </header>
+
+  <div id="content">
+    <aside id="sidebar">
+      <h3 id="sidebarMonth">January</h3>
+      <div id="calendar"></div>
+    </aside>
+
+    <main id="entriesContainer">
+      <p class="hint">Select a year or load diary files to begin reading.</p>
+    </main>
+  </div>
+
+  <footer>
+    <small>© Chris Hackman 2025</small>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(reg => console.log("Service Worker registered:", reg))
+        .catch(err => console.error("SW registration failed:", err));
+    });
+  }
+  </script>
+</body>
+</html>
+
