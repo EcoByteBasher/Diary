@@ -40,33 +40,31 @@ document.addEventListener("DOMContentLoaded", async () => {
    (requires server directory listing e.g. python -m http.server)
    ----------------------- */
 async function loadAllDiariesFromFolder() {
-  diaryData = {}; // reset
-  const response = await fetch(diaryDir);
-  if (!response.ok) throw new Error(`Cannot read folder listing from ${diaryDir}`);
+  try {
+    // Fetch the manifest JSON that lists the diary files
+    const response = await fetch(`${diaryDir}manifest.json`);
+    if (!response.ok) throw new Error("Failed to load diary manifest");
 
-  const html = await response.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
+    // Parse the JSON to get the list of diary files
+    const manifest = await response.json();
+    const links = manifest.files;
 
-  const links = Array.from(doc.querySelectorAll("a"))
-    .map(a => a.getAttribute("href"))
-    .filter(h => h && h.match(/\d{4}\.txt$/i));
+    if (links.length === 0) throw new Error("No .txt files found in the manifest");
 
-  if (links.length === 0) throw new Error("No .txt files found in ./diaries/");
-
-  for (const file of links) {
-    const year = extractYear(file);
-    try {
+    // Load the diary files from the list in the manifest
+    for (const file of links) {
+      const year = extractYear(file);
       const res = await fetch(`${diaryDir}${file}`);
       const text = await res.text();
-      diaryData[year] = parseDiaryText(text, parseInt(year));
-    } catch (err) {
-      console.warn(`Failed to load ${file}:`, err);
+      diaryData[year] = parseDiaryText(text, year);
     }
-  }
 
-  // Populate selector with the years we actually have
-  populateYearSelectFromData();
+    finalizeDiaryLoad();
+  } catch (err) {
+    console.error("Failed to load diaries:", err);
+    const container = document.getElementById("entriesContainer");
+    if (container) container.innerHTML = `<p class="error">⚠️ Unable to load diary files. Please check your files or network.</p>`;
+  }
 }
 
 /* -----------------------
