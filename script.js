@@ -6,6 +6,8 @@ const MIN_YEAR = 1972;
 const MAX_YEAR = 2014;
 const diaryDir = "./diaries/";
 
+import { encryptText, decryptPackage } from './crypto.js';
+
 let diaryData = {};     // { year: [ { header, entry, date, dayNum } ] }
 let currentYear = null; // numeric year
 let currentView = "month"; // "month" | "week" | "day"
@@ -39,53 +41,80 @@ document.addEventListener("DOMContentLoaded", async () => {
    Load all diaries from ./diaries/
    (requires server directory listing e.g. python -m http.server)
    ----------------------- */
+/* --- UNIVERSAL DIARY LOADER (supports .txt and .enc) --- */
 async function loadAllDiariesFromFolder() {
   try {
-    // Fetch the manifest JSON that lists the diary files
+    // 1. Fetch manifest listing all diary files
     const response = await fetch(`${diaryDir}manifest.json`);
     if (!response.ok) throw new Error("Failed to load diary manifest");
-
-    // Parse the JSON to get the list of diary files
     const manifest = await response.json();
-    const links = manifest.files;
+    const files = manifest.files || [];
+    if (!files.length) throw new Error("No diary files listed in manifest");
 
-    if (links.length === 0) throw new Error("No .txt files found in the manifest");
-
-    // Load the diary files from the list in the manifest
-    for (const file of links) {
-      const year = extractYear(file);
-      const res = await fetch(`${diaryDir}${file}`);
-      const text = await res.text();
-      diaryData[year] = parseDiaryText(text, year);
+    // 2. If there are any encrypted files, request passphrase (once per session)
+    const hasEncrypted = files.some(f => f.endsWith(".enc"));
+    let passphrase = null;
+    if (hasEncrypted) {
+      passphrase = sessionStorage.getItem("diary_passphrase");
+      if (!passphrase) {
+        passphrase = prompt("Enter your diary passphrase to decrypt encrypted diaries:");
+        if (!passphrase) throw new Error("No passphrase provided");
+        sessionStorage.setItem("diary_passphrase", passphrase);
+      }
     }
 
-    // Populate the year selector and show the first view
-    finalizeDiaryLoad(links);
+    // 3. Load each file
+    diaryData = {}; // reset existing data
+    for (const file of files) {
+      const year = extractYear(file);
+      const url = `${diaryDir}${file}`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Cannot fetch ${file}`);
+        const text = await res.text();
+
+        let plain;
+        if (file.endsWith(".enc")) {
+          try {
+            plain = await decryptPackage(text, passphrase);
+          } catch (err) {
+            console.error(`Failed to decrypt ${file}:`, err);
+            continue;
+          }
+        } else {
+          plain = text;
+        }
+
+        diaryData[year] = parseDiaryText(plain, parseInt(year));
+      } catch (err) {
+        console.error(`Error loading ${file}:`, err);
+      }
+    }
+
+    finalizeDiaryLoad(diaryData);
 
   } catch (err) {
     console.error("Failed to load diaries:", err);
     const container = document.getElementById("entriesContainer");
-    if (container) container.innerHTML = `<p class="error">⚠️ Unable to load diary files. Please check your files or network.</p>`;
+    if (container) container.innerHTML =
+      `<p class="error">⚠️ Unable to load diary files.<br>${err.message}</p>`;
   }
 }
 
-function finalizeDiaryLoad(files) {
-  // Extract years from the files
-  const years = files.map(file => extractYear(file)).sort();
-  
+function finalizeDiaryLoad(allDiaries) {
+  const years = Object.keys(allDiaries).sort((a, b) => a - b);
+  if (years.length === 0) {
+    throw new Error("No diary data loaded");
+  }
+
   const select = document.getElementById("yearSelect");
   if (!select) return;
 
-  // Populate the year dropdown with available years
-  select.innerHTML = years.map(year => `<option value="${year}">${year}</option>`).join("");
-  
-  // Set the current year to the first year in the list
-  currentYear = years[0];
+  select.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join("");
+  currentYear = parseInt(years[0]);
   select.value = currentYear;
 
-  // Show the initial view
   showCurrentView();
-
   console.log(`✅ Loaded ${years.length} diary files (${years[0]}–${years[years.length - 1]})`);
 }
 

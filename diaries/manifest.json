@@ -1,17 +1,15 @@
 {
   "files": [
-    "1972.txt",
-    "1973.txt",
-    "1974.txt",
-    "1975.txt",
-    "1976.txt",
-    "1977.txt",
-    "1978.txt",
-    "1979.txt",
-    "1980.txt",
-    "1981.txt",
-    "1982.txt",
-    "1983.txt"
+    "1972.txt.enc",
+    "1973.txt.enc",
+    "1974.txt.enc",
+    "1976.txt.enc",
+    "1977.txt.enc",
+    "1978.txt.enc",
+    "1979.txt.enc",
+    "1980.txt.enc",
+    "1981.txt.enc",
+    "1982.txt.enc",
+    "1983.txt.enc"
   ]
 }
-
