@@ -11,7 +11,9 @@
 </head>
 <body>
   <header>
-    <h1>Chris' Diary</h1>
+    <h1>Chris' Diary'</h1>
+    <div id="app-version" class="app-version" style='display:inline'></div>
+
     <div class="toolbar">
       <label>Year:
         <select id="yearSelect"></select>
@@ -32,7 +34,7 @@
     </div>
 
     <div class="searchbar">
-      <input id="searchInput" type="text" placeholder='Search ("Mike" AND "Dave")'>
+      <input id="searchInput" type="text" placeholder='Search (Item1 AND/OR Item2)'>
       <label><input type="checkbox" id="searchAllYears"> All years</label>
       <button id="searchBtn">Search</button>
       <button id="clearBtn">Clear</button>
@@ -61,6 +63,19 @@
   </footer>
 
   <script>
+  let appVersion = 'unknown';
+
+  // Load version from manifest
+  fetch('manifest.json')
+    .then(res => res.json())
+    .then(manifest => {
+      appVersion = manifest.version || 'unknown';
+      document.getElementById('app-version').textContent = `v${appVersion}`;
+    })
+    .catch(() => {
+      document.getElementById('app-version').textContent = `(${appVersion})`;
+    });
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("service-worker.js")
