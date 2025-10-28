@@ -1,6 +1,5 @@
 Notes
-./diaries/*.txt
-./diaries/Peter
-./diaries/encrypt_diaries.js
-./icons/old/
-
+*.txt
+diaries/encrypt_diaries.js
+diaries/Peter
+/icons/old
