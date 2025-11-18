@@ -34,6 +34,11 @@ function hideLoadingOverlay() {
   if (overlay) overlay.style.display = "none";
 }
 
+function formatSeconds(sec) {
+  if (sec < 1) return "<1s";
+  return `${sec.toFixed(1)}s`;
+}
+
 /* -----------------------
    Single initialization
    ----------------------- */
@@ -85,15 +90,23 @@ async function loadAllDiariesFromFolder() {
       }
     }
 
-    // 3. Load each file, showing progress
-    diaryData = {}; // reset existing data
-    for (let i = 0; i < files.length; i++) {
+    // 3. Load each file, showing progress + ETA
+    diaryData = {};
+    const total = files.length;
+    const startTime = performance.now();
+
+    for (let i = 0; i < total; i++) {
       const file = files[i];
       const year = extractYear(file);
       const url = `${diaryDir}${file}`;
 
-      // Update overlay: e.g. "Loading 1976 (4/12)…"
-      updateLoadingOverlay(`Loading ${file} (${i + 1}/${files.length})…`);
+      // Compute ETA
+      let elapsed = (performance.now() - startTime) / 1000; // seconds
+      let avg = elapsed / Math.max(i, 1);
+      let remaining = avg * (total - i);
+      let etaText = formatSeconds(remaining);
+
+      updateLoadingOverlay(`Loading ${file} (${i + 1}/${total})…  ETA: ${etaText}`);
 
       try {
         const res = await fetch(url);
@@ -119,7 +132,9 @@ async function loadAllDiariesFromFolder() {
       }
     }
 
+    // Final message while UI builds
     updateLoadingOverlay("Finalizing diary data…");
+
     finalizeDiaryLoad(diaryData);
 
   } catch (err) {
