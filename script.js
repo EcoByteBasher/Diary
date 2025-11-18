@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
    ----------------------- */
 /* --- UNIVERSAL DIARY LOADER (supports .txt and .enc) --- */
 async function loadAllDiariesFromFolder() {
+  showLoadingOverlay("Loading diary files… please wait");
   try {
     // 1. Fetch manifest listing all diary files
     const response = await fetch(`${diaryDir}manifest.json`);
@@ -126,6 +127,8 @@ async function loadAllDiariesFromFolder() {
     const container = document.getElementById("entriesContainer");
     if (container) container.innerHTML =
       `<p class="error">⚠️ Unable to load diary files.<br>${err.message}</p>`;
+  } finally {
+    hideLoadingOverlay(); // <-- ALWAYS hides, success or failure
   }
 }
 
