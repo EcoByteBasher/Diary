@@ -13,6 +13,27 @@ let currentYear = null; // numeric year
 let currentView = "month"; // "month" | "week" | "day"
 let currentDate = null; // Date object representing the current focused date
 
+function showLoadingOverlay(message = "Loading…") {
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay) {
+    overlay.textContent = message;
+    overlay.style.display = "flex";
+  }
+}
+
+// Optional helper for updating without flicker:
+function updateLoadingOverlay(message) {
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay && overlay.style.display !== "none") {
+    overlay.textContent = message;
+  }
+}
+
+function hideLoadingOverlay() {
+  const overlay = document.getElementById("loadingOverlay");
+  if (overlay) overlay.style.display = "none";
+}
+
 /* -----------------------
    Single initialization
    ----------------------- */
@@ -63,11 +84,16 @@ async function loadAllDiariesFromFolder() {
       }
     }
 
-    // 3. Load each file
+    // 3. Load each file, showing progress
     diaryData = {}; // reset existing data
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       const year = extractYear(file);
       const url = `${diaryDir}${file}`;
+
+      // Update overlay: e.g. "Loading 1976 (4/12)…"
+      updateLoadingOverlay(`Loading ${file} (${i + 1}/${files.length})…`);
+
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Cannot fetch ${file}`);
@@ -86,11 +112,13 @@ async function loadAllDiariesFromFolder() {
         }
 
         diaryData[year] = parseDiaryText(plain, parseInt(year));
+
       } catch (err) {
         console.error(`Error loading ${file}:`, err);
       }
     }
 
+    updateLoadingOverlay("Finalizing diary data…");
     finalizeDiaryLoad(diaryData);
 
   } catch (err) {

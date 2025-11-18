@@ -62,6 +62,22 @@
     <small>© Chris Hackman 2025</small>
   </footer>
 
+  <div id="loadingOverlay" style="
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: white;
+    font-size: 1.6rem;
+    font-family: sans-serif;
+    ">
+    📖 Loading diary files… please wait
+  </div>
+
   <script>
   let appVersion = 'unknown';
 
