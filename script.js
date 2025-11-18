@@ -69,7 +69,6 @@ document.addEventListener("DOMContentLoaded", async () => {
    ----------------------- */
 /* --- UNIVERSAL DIARY LOADER (supports .txt and .enc) --- */
 async function loadAllDiariesFromFolder() {
-  showLoadingOverlay("Loading diary files… please wait");
   try {
     // 1. Fetch manifest listing all diary files
     const response = await fetch(`${diaryDir}manifest.json`);
@@ -82,13 +81,41 @@ async function loadAllDiariesFromFolder() {
     const hasEncrypted = files.some(f => f.endsWith(".enc"));
     let passphrase = null;
     if (hasEncrypted) {
+      // Try previously stored key first
       passphrase = sessionStorage.getItem("diary_passphrase");
-      if (!passphrase) {
-        passphrase = prompt("Enter your diary passphrase to decrypt encrypted diaries:");
-        if (!passphrase) throw new Error("No passphrase provided");
-        sessionStorage.setItem("diary_passphrase", passphrase);
+
+      let attempts = 0;
+      const maxAttempts = 3;
+
+      while (!passphrase) {
+        const input = prompt("Enter your diary passphrase:\n\n(Click Cancel to abort)");
+
+        if (input === null) {
+          hideLoadingOverlay();
+          throw new Error("Loading cancelled by user");
+        }
+
+        // Quick sanity check: test decrypting the first encrypted file
+        const firstEnc = files.find(f => f.endsWith(".enc"));
+        const testRes = await fetch(`${diaryDir}${firstEnc}`);
+        const testText = await testRes.text();
+
+        try {
+          await decryptPackage(testText, input);
+          passphrase = input;
+          sessionStorage.setItem("diary_passphrase", passphrase);
+          break;
+        } catch {
+          attempts++;
+          if (attempts >= maxAttempts) {
+            hideLoadingOverlay();
+            throw new Error("Too many incorrect attempts — aborting");
+          }
+          alert(`Incorrect passphrase. Attempts left: ${maxAttempts - attempts}`);
+        }
       }
     }
+    showLoadingOverlay("Loading diary files… please wait");
 
     // 3. Load each file, showing progress + ETA
     diaryData = {};
