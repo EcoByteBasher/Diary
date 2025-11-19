@@ -84,9 +84,6 @@ async function loadAllDiariesFromFolder() {
       // Try previously stored key first
       passphrase = sessionStorage.getItem("diary_passphrase");
 
-      let attempts = 0;
-      const maxAttempts = 3;
-
       while (!passphrase) {
         const input = prompt("Enter your diary passphrase:\n\n(Click Cancel to abort)");
 
@@ -106,12 +103,7 @@ async function loadAllDiariesFromFolder() {
           sessionStorage.setItem("diary_passphrase", passphrase);
           break;
         } catch {
-          attempts++;
-          if (attempts >= maxAttempts) {
-            hideLoadingOverlay();
-            throw new Error("Too many incorrect attempts — aborting");
-          }
-          alert(`Incorrect passphrase. Attempts left: ${maxAttempts - attempts}`);
+          alert(`Incorrect passphrase.`);
         }
       }
     }
